@@ -1,10 +1,10 @@
-Social Media Simulation - GUVI Galgotias Project (2nd Sem 2028)
-Project Overview
-This project is a basic GUI-based social media simulation developed as part of the GUVI - Galgotias Project Board for the 2nd Semester (2028). The aim is to provide a hands-on platform for applying theoretical knowledge in Java programming, database management, and GUI design.
+#Social Media Simulation - GUVI Galgotias Project (2nd Sem 2028)
+#Project Overview
+#This project is a basic GUI-based social media simulation developed as part of the GUVI - Galgotias Project Board for the 2nd Semester (2028). The aim is to provide a hands-on platform for applying theoretical knowledge in Java programming, database management, and GUI design.
 
 This simulation allows users to:
 
-Register for a new account.
+#Register for a new account.
 Log in to an existing account.
 Create and share new posts on a public feed.
 View posts from all users on the main dashboard.
