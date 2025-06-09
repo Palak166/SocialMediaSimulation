@@ -1,4 +1,4 @@
-// src/com/socialmedia/model/User.java
+// src/com/socialMedia/model/User.java
 package com.socialmedia.model;
 
 import java.time.LocalDateTime;

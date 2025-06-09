@@ -1,4 +1,4 @@
-// src/com/socialmedia/dao/PostDAO.java
+// src/com/socialMedia/dao/PostDAO.java
 package com.socialmedia.dao;
 
 import com.socialmedia.model.Post;

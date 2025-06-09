@@ -8,7 +8,7 @@ import java.sql.SQLException;
 public class DBConnection {
 
     private static final String JDBC_URL = "jdbc:mysql://localhost:3306/social_media_db?useSSL=false&serverTimezone=UTC";
-    private static final String USER = "HashHackers"; // Your MySQL username
+    private static final String USER = "root"; // Your MySQL username
     private static final String PASSWORD = "Sun$et_R0ckz!92"; // Your MySQL root password
 
     public static Connection getConnection() throws SQLException {

@@ -1,4 +1,4 @@
-// src/com/socialmedia/app/DashboardFrame.java
+// src/com/socialMedia/app/DashboardFrame.java
 package com.socialmedia.app;
 
 import com.socialmedia.dao.PostDAO;

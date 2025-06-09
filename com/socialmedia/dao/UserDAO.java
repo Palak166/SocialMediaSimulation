@@ -1,4 +1,4 @@
-// src/com/socialmedia/dao/UserDAO.java
+// src/com/socialMedia/dao/UserDAO.java
 package com.socialmedia.dao;
 
 import com.socialmedia.model.User;

@@ -1,4 +1,4 @@
-// src/com/socialmedia/app/LoginRegisterFrame.java
+// src/com/socialMedia/app/LoginRegisterFrame.java
 package com.socialmedia.app;
 
 import com.socialmedia.dao.UserDAO;
