@@ -2,6 +2,7 @@
 package com.socialmedia.app;
 
 import com.socialmedia.dao.PostDAO;
+import com.socialmedia.dao.UserDAO;
 import com.socialmedia.model.Post;
 import com.socialmedia.model.User;
 
@@ -9,17 +10,32 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class DashboardFrame extends JFrame {
     private User currentUser;
     private PostDAO postDAO;
+    private UserDAO userDAO;
     private JTextArea postContentArea;
-    private JPanel feedPanel; // Panel to display posts
+    private JPanel feedPanel;// Panel to display posts
+    private JLabel charCountLabel;
 
     public DashboardFrame(User user) {
         this.currentUser = user;
-        this.postDAO = new PostDAO();
+        // DAO instances are initialized here. Add userDAO as well.
+        try { // It's good practice to wrap DAO initialization in a try-catch for DB errors
+            this.postDAO = new PostDAO();
+            this.userDAO = new UserDAO(); // <--- ADD THIS LINE
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Could not initialize database components. Please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            // In a real application, you might decide whether to exit here or just disable functionality
+            // For now, it's okay to let the rest of the constructor run, but functionality might be limited
+            return; // Exit constructor if DAO initialization fails
+        }
         setTitle("Social Media Dashboard - Welcome, " + currentUser.getUsername());
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -48,6 +64,30 @@ public class DashboardFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(postContentArea);
         newPostPanel.add(scrollPane, BorderLayout.CENTER);
 
+        // --- ADD CHARACTER COUNT LABEL AND LISTENER HERE ---
+        charCountLabel = new JLabel("Characters: 0"); // Initialize the label
+        charCountLabel.setFont(new Font("SansSerif", Font.PLAIN, 12)); // Optional: smaller font
+        newPostPanel.add(charCountLabel, BorderLayout.SOUTH); // Add it to the bottom of newPostPanel
+
+        // Add DocumentListener to the text area
+        postContentArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateCharCount();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateCharCount();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateCharCount(); // Plain text components usually don't fire this for content changes
+            }
+        });
+        // --- END CHARACTER COUNT CODE ---
+        
         JButton postButton = new JButton("Post");
         postButton.addActionListener(new ActionListener() {
             @Override
@@ -75,6 +115,17 @@ public class DashboardFrame extends JFrame {
             }
         });
         bottomPanel.add(logoutButton);
+        // --- ADD THIS CODE FOR PROFILE BUTTON ---
+        JButton profileButton = new JButton("My Profile");
+        profileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showProfileDialog(); // This method will be defined next
+            }
+        });
+        bottomPanel.add(profileButton); // Add profile button to the panel
+// --- END OF PROFILE BUTTON CODE ---
+
         add(bottomPanel, BorderLayout.SOUTH);
 
         loadPosts(); // Load posts when the dashboard opens
