@@ -14,15 +14,15 @@ public class PostDAO {
     public boolean createPost(Post post) {
         String sql = "INSERT INTO posts (user_id, content) VALUES (?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setInt(1, post.getUserId());
-            pstmt.setString(2, post.getContent());
+            stmt.setInt(1, post.getUserId());
+            stmt.setString(2, post.getContent());
 
-            int affectedRows = pstmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
 
             if (affectedRows > 0) {
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         post.setId(generatedKeys.getInt(1));
                     }
@@ -60,10 +60,10 @@ public class PostDAO {
         List<Post> posts = new ArrayList<>();
         String sql = "SELECT id, user_id, content, created_at FROM posts WHERE user_id = ? ORDER BY created_at DESC";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            pstmt.setInt(1, userId);
-            try (ResultSet rs = pstmt.executeQuery()) {
+            stmt.setInt(1, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     int id = rs.getInt("id");
                     int postUserId = rs.getInt("user_id");

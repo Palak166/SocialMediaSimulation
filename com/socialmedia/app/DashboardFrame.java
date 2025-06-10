@@ -36,6 +36,7 @@ public class DashboardFrame extends JFrame {
             // For now, it's okay to let the rest of the constructor run, but functionality might be limited
             return; // Exit constructor if DAO initialization fails
         }
+
         setTitle("Social Media Dashboard - Welcome, " + currentUser.getUsername());
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,22 +73,22 @@ public class DashboardFrame extends JFrame {
         // Add DocumentListener to the text area
         postContentArea.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
                 updateCharCount();
             }
 
             @Override
-            public void removeUpdate(DocumentEvent e) {
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
                 updateCharCount();
             }
 
             @Override
-            public void changedUpdate(DocumentEvent e) {
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
                 updateCharCount(); // Plain text components usually don't fire this for content changes
             }
         });
         // --- END CHARACTER COUNT CODE ---
-        
+
         JButton postButton = new JButton("Post");
         postButton.addActionListener(new ActionListener() {
             @Override
@@ -125,12 +126,12 @@ public class DashboardFrame extends JFrame {
         });
         bottomPanel.add(profileButton); // Add profile button to the panel
 // --- END OF PROFILE BUTTON CODE ---
-
         add(bottomPanel, BorderLayout.SOUTH);
 
         loadPosts(); // Load posts when the dashboard opens
     }
 
+    
     private void createNewPost() {
         String content = postContentArea.getText().trim();
         if (content.isEmpty()) {
@@ -158,12 +159,12 @@ public class DashboardFrame extends JFrame {
             feedPanel.add(new JLabel("No posts yet. Be the first to post!"));
         } else {
             for (Post post : posts) {
-                // In a real application, you'd fetch the username using post.getUserId()
-                // For simplicity here, we'll just display "User [ID]"
-                String username = "User " + post.getUserId();
-                // You could add a UserDAO method to get username by ID.
-                // User poster = userDAO.getUserById(post.getUserId());
-                // String username = poster != null ? poster.getUsername() : "Unknown User";
+                // --- CORRECTED SECTION FOR USERNAME ---
+                        // Fetch the User object using the user_id from the post
+                        User poster = userDAO.getUserById(post.getUserId());
+                // Get the username; if user is null (e.g., deleted), show "Unknown User"
+                String username = (poster != null) ? poster.getUsername() : "Unknown User";
+                // --- END OF CORRECTED SECTION ---
 
                 JTextArea postDisplay = new JTextArea(
                         username + " posted:\n" +
@@ -194,5 +195,56 @@ public class DashboardFrame extends JFrame {
             loginRegisterFrame.setVisible(true);
             this.dispose(); // Close dashboard
         }
+    }
+    private void showProfileDialog() {
+        JDialog profileDialog = new JDialog(this, "User Profile", true);
+        profileDialog.setSize(300, 200);
+        profileDialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new GridLayout(4, 1, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        if (currentUser != null) {
+            JLabel usernameLabel = new JLabel("Username: " + currentUser.getUsername());
+            usernameLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+            panel.add(usernameLabel);
+
+            JLabel emailLabel = new JLabel("Email: " + currentUser.getEmail());
+            emailLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            panel.add(emailLabel);
+
+            JLabel memberSinceLabel = new JLabel("Member Since: " + currentUser.getCreatedAt().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            memberSinceLabel.setFont(new Font("SansSerif", Font.ITALIC, 12));
+            panel.add(memberSinceLabel);
+        } else {
+            panel.add(new JLabel("User data not available."));
+        }
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> profileDialog.dispose());
+        buttonPanel.add(closeButton);
+
+        profileDialog.add(panel, BorderLayout.CENTER);
+        profileDialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        profileDialog.setVisible(true);
+    }
+    // In src/com/socialMedia/app/DashboardFrame.java
+// ... (after showProfileDialog() method) ...
+
+    /**
+     * Updates the text of the character count label based on the current content of postContentArea.
+     */
+    private void updateCharCount() {
+        int charCount = postContentArea.getText().length();
+        charCountLabel.setText("Characters: " + charCount);
+        // Optional: Add a character limit (e.g., 200 characters)
+        // if (charCount > 200) {
+        //     charCountLabel.setForeground(Color.RED);
+        //     // Also prevent posting if over limit in createNewPost()
+        // } else {
+        //     charCountLabel.setForeground(Color.BLACK); // Or default color
+        // }
     }
 }
