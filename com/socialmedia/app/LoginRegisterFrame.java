@@ -20,25 +20,7 @@ public class LoginRegisterFrame extends JFrame {
     private UserDAO userDAO;
 
     public LoginRegisterFrame() {
-        // --- ADD THIS TRY-CATCH BLOCK ---
-        try {
-            userDAO = new UserDAO(); // Initialize UserDAO
-            // Optional: You can add a small test here if your UserDAO constructor doesn't
-            // inherently test the connection, though usually it will fail on first operation.
-            // For example:
-            // if (userDAO.loginUser("nonexistent", "password") != null) { /* this won't happen but forces connection */ }
-        } catch (Exception e) { // Catching a broad 'Exception' because DBConnection issues might throw different types
-            JOptionPane.showMessageDialog(this,
-                    "<html><font color='red'><b>Database Connection Error:</b></font><br>" +
-                            "The application could not connect to the database.<br>" +
-                            "Please ensure the MySQL server is running and configured correctly.",
-                    "Application Startup Error",
-                    JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace(); // Log the full error to console for debugging
-            System.exit(1);     // Exit the application gracefully as it cannot function without DB
-            return;             // Stop constructor execution
-        }
-        // --- END OF ADDED TRY-CATCH ---
+        userDAO = new UserDAO();
         setTitle("Social Media Simulation - Login/Register");
         setSize(800, 500); // Increased size for better layout
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -172,18 +154,15 @@ public class LoginRegisterFrame extends JFrame {
             return;
         }
 
-
         User user = userDAO.loginUser(username, password);
         if (user != null) {
             JOptionPane.showMessageDialog(this, "Login successful! Welcome, " + user.getUsername() + "!", "Login Success", JOptionPane.INFORMATION_MESSAGE);
+            // Open the main social media dashboard
             DashboardFrame dashboard = new DashboardFrame(user);
             dashboard.setVisible(true);
-            this.dispose();
+            this.dispose(); // Close login/register window
         } else {
-            JOptionPane.showMessageDialog(this,
-                    "Login failed. Invalid username or password. Please try again.", // Slightly enhanced
-                    "Login Failed",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -218,12 +197,7 @@ public class LoginRegisterFrame extends JFrame {
             passwordRegisterField.setText("");
             confirmPasswordField.setText("");
         } else {
-            // This message is already quite good, as the DAO specifically logs the duplicate error.
-            // We can add "Please try a different username or email." for more direct guidance.
-            JOptionPane.showMessageDialog(this,
-                    "Registration failed. This username or email might already be in use. Please try a different username or email.",
-                    "Registration Failed",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Registration failed. Username or email might already exist.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -241,4 +215,3 @@ public class LoginRegisterFrame extends JFrame {
         });
     }
 }
-
