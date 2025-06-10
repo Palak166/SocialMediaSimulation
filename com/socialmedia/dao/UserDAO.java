@@ -5,6 +5,7 @@ import com.socialmedia.model.User;
 import com.socialmedia.util.DBConnection;
 
 import java.sql.*;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,28 +15,34 @@ public class UserDAO {
     public boolean registerUser(User user) {
         String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setString(1, user.getUsername());
-            pstmt.setString(2, user.getPassword()); // In a real app, hash this password!
-            pstmt.setString(3, user.getEmail());
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getPassword()); // In a real app, hash this password!
+            stmt.setString(3, user.getEmail());
 
-            int affectedRows = pstmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate();
 
             if (affectedRows > 0) {
-                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         user.setId(generatedKeys.getInt(1));
                     }
                 }
+                System.out.println("User registered successfully: " + user.getUsername()); // <--- ADD THIS
                 return true;
             }
         } catch (SQLException e) {
-            System.err.println("Error registering user: " + e.getMessage());
-            // In a real application, handle duplicate entry errors more gracefully
-            if (e.getMessage().contains("Duplicate entry")) {
-                System.err.println("Username or email already exists.");
+            System.err.println("Database Error during user registration for: " + user.getUsername()); // <--- ENHANCED MESSAGE
+            System.err.println("SQLState: " + e.getSQLState()); // <--- ADD THIS
+            System.err.println("Error Code: " + e.getErrorCode()); // <--- ADD THIS
+            e.printStackTrace(); // <--- ADD THIS: Crucial for full stack trace
+
+            // Specific handling for duplicate entry error (MySQL error code 1062)
+            if (e.getErrorCode() == 1062) {
+                System.err.println("Reason: Username or Email already exists."); // <--- ENHANCED MESSAGE
             }
+            // Optional: You could add more specific checks for other error codes if needed.
         }
         return false;
     }
@@ -43,15 +50,15 @@ public class UserDAO {
     public User loginUser(String username, String password) {
         String sql = "SELECT id, username, password, email, created_at FROM users WHERE username = ? AND password = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, username);
-            pstmt.setString(2, password); // In a real app, compare with hashed password!
+            stmt.setString(1, username);
+            stmt.setString(2, password); // In a real app, compare with hashed password!
 
-            try (ResultSet rs = pstmt.executeQuery()) {
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     int id = rs.getInt("id");
-                    String user = rs.getString("username");
+                    String user = rs.getString("username"); // Renamed variable to avoid conflict with class name
                     String pass = rs.getString("password");
                     String email = rs.getString("email");
                     Timestamp ts = rs.getTimestamp("created_at");
@@ -60,32 +67,41 @@ public class UserDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("Error logging in user: " + e.getMessage());
+            System.err.println("Database Error during user login for: " + username); // <--- ENHANCED MESSAGE
+            System.err.println("SQLState: " + e.getSQLState()); // <--- ADD THIS
+            System.err.println("Error Code: " + e.getErrorCode()); // <--- ADD THIS
+            e.printStackTrace(); // <--- ADD THIS: Crucial for full stack trace
         }
         return null;
     }
+    // ... (after loginUser method) ...
 
-    public User getUserByUsername(String username) {
-        String sql = "SELECT id, username, password, email, created_at FROM users WHERE username = ?";
+    public User getUserById(int userId) { // <-- Renamed parameter to userId for clarity
+        String sql = "SELECT id, username, password, email, created_at FROM users WHERE id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, username);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
+            stmt.setInt(1, userId); // Set the user ID for the query
+            try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    int id = rs.getInt("id");
-                    String user = rs.getString("username");
-                    String pass = rs.getString("password");
+                    // Reconstruct User object from database data
+                    int id = rs.getInt("id"); // Get ID from ResultSet
+                    String username = rs.getString("username");
+                    String pass = rs.getString("password"); // Not strictly needed for display, but good to fetch
                     String email = rs.getString("email");
                     Timestamp ts = rs.getTimestamp("created_at");
+                    // Convert Timestamp to LocalDateTime
                     LocalDateTime createdAt = ts != null ? ts.toLocalDateTime() : null;
-                    return new User(id, user, pass, email, createdAt);
+                    return new User(id, username, pass, email, createdAt);
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error getting user by username: " + e.getMessage());
+        }  catch (SQLException e) {
+            System.err.println("Database Error getting user by ID: " + userId); // <--- ENHANCED MESSAGE
+            System.err.println("SQLState: " + e.getSQLState()); // <--- ADDED THIS for consistency
+            System.err.println("Error Code: " + e.getErrorCode()); // <--- ADDED THIS for consistency
+            e.printStackTrace();
         }
         return null;
     }
-}
+} // End of UserDAO class
+

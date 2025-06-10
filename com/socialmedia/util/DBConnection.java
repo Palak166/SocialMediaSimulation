@@ -1,4 +1,4 @@
-// src/com/socialmedia/util/DBConnection.java
+// src/com/socialMedia/util/DBConnection.java
 package com.socialmedia.util;
 
 import java.sql.Connection;
